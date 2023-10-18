@@ -1,5 +1,5 @@
-import { Allow } from "./options.js";
-export * from "./options.js";
+import { Allow } from "./options";
+export * from "./options";
 
 class PartialJSON extends Error { }
 
@@ -9,7 +9,7 @@ class MalformedJSON extends Error { }
  * @param {string} jsonString Partial JSON to be parsed
  * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
  */
-const parseJSON = (jsonString, allowPartial = Allow.ALL) => {
+const parseJSON = (jsonString: string, allowPartial: number = Allow.ALL) => {
     if (typeof jsonString !== "string") {
         throw new TypeError(`expecting str, got ${typeof jsonString}`);
     }
@@ -19,22 +19,19 @@ const parseJSON = (jsonString, allowPartial = Allow.ALL) => {
     return _parseJSON(jsonString.trim(), allowPartial);
 };
 
-/** @param {string} jsonString @param {number} allow */
-const _parseJSON = (jsonString, allow) => {
+const _parseJSON = (jsonString: string, allow: number) => {
     const length = jsonString.length;
     let index = 0;
 
-    /** @param {string} msg */
-    const markPartialJSON = (msg) => {
+    const markPartialJSON = (msg: string) => {
         throw new PartialJSON(`${msg} at position ${index}`);
     };
 
-    /** @param {string} msg */
-    const throwMalformedError = (msg) => {
+    const throwMalformedError = (msg: string) => {
         throw new MalformedJSON(`${msg} at position ${index}`);
     };
 
-    const parseAny = () => {
+    const parseAny: () => any = () => {
         skipBlank();
         if (index >= length) markPartialJSON("Unexpected end of input");
         if (jsonString[index] === '"') return parseStr();
@@ -67,7 +64,7 @@ const _parseJSON = (jsonString, allow) => {
         return parseNum();
     };
 
-    const parseStr = () => {
+    const parseStr: () => string = () => {
         const start = index;
         let escape = false;
         index++; // skip initial quote
@@ -77,13 +74,13 @@ const _parseJSON = (jsonString, allow) => {
         }
         if (jsonString.charAt(index) == '"') {
             try {
-                return JSON.parse(jsonString.substring(start, ++index - escape));
+                return JSON.parse(jsonString.substring(start, ++index - Number(escape)));
             } catch (e) {
-                throwMalformedError(e);
+                throwMalformedError(String(e));
             }
         } else if (Allow.STR & allow) {
             try {
-                return JSON.parse(jsonString.substring(start, index - escape) + '"');
+                return JSON.parse(jsonString.substring(start, index - Number(escape)) + '"');
             } catch (e) {
                 // SyntaxError: Invalid escape sequence
                 return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("\\", Math.max(0, index - 5))) + '"');
@@ -95,7 +92,7 @@ const _parseJSON = (jsonString, allow) => {
     const parseObj = () => {
         index++; // skip initial brace
         skipBlank();
-        const obj = {};
+        const obj: Record<string, any> = {};
         try {
             while (jsonString[index] !== "}") {
                 skipBlank();
@@ -152,7 +149,7 @@ const _parseJSON = (jsonString, allow) => {
                     try {
                         return JSON.parse(jsonString.substring(0, jsonString.lastIndexOf("e")));
                     } catch (e) { }
-                throwMalformedError(e);
+                throwMalformedError(String(e));
             }
         }
 
@@ -170,7 +167,7 @@ const _parseJSON = (jsonString, allow) => {
             try {
                 return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("e")));
             } catch (e) {
-                throwMalformedError(e);
+                throwMalformedError(String(e));
             }
         }
     };
