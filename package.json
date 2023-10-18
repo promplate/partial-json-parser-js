@@ -9,15 +9,20 @@
     "nlp"
   ],
   "homepage": "https://promplate.dev",
-  "repository": {
-    "type": "github",
-    "url": "https://github.com/promplate/partial-json-parser-js"
-  },
+  "repository": "https://github.com/promplate/partial-json-parser-js",
   "license": "MIT",
   "author": "Muspi Merol <me@promplate.dev>",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
+    "build": "npm run build:cjs & npm run build:esm",
+    "build:cjs": "esbuild src/index.js --sourcemap=external --minify --bundle --format=cjs --outfile=dist/index.cjs",
+    "build:esm": "esbuild src/index.js --sourcemap=external --minify --bundle --format=esm --outfile=dist/index.mjs",
     "coverage": "vitest run --coverage",
     "test": "vitest",
     "test:ui": "vitest --ui"
@@ -25,6 +30,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^0.34.6",
     "@vitest/ui": "^0.34.6",
+    "esbuild": "^0.19.5",
     "vitest": "^0.34.6"
   }
 }
