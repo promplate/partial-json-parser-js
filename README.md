@@ -4,7 +4,7 @@ Sometimes we need **LLM (Large Language Models)** to produce **structural inform
 
 But before receiving the last token of response, the JSON is broken, which means you can't use `JSON.parse` to decode it. But we still want to stream the data to the user.
 
-Here comes `partial-json`, a lightweight and customizable library for parsing partial JSON strings.
+Here comes `partial-json`, a lightweight and customizable library for parsing partial JSON strings. Here is a [demo](https://promplate.dev/partial-json-parser).
 
 (Note that there is [a Python implementation](https://github.com/promplate/partial-json-parser) too)
 
