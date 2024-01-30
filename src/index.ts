@@ -1,4 +1,4 @@
-import { Allow } from "./options";
+import Allow from "./options";
 export * from "./options";
 
 class PartialJSON extends Error { }
@@ -7,6 +7,7 @@ class MalformedJSON extends Error { }
 
 /** Partial JSON parser
  * @param {string} jsonString Partial JSON to be parsed
+ * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
  * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
  */
 const parseJSON = (jsonString: string, allowPartial: number = Allow.ALL) => {
