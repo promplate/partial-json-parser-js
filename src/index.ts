@@ -173,7 +173,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
     };
 
     const skipBlank = () => {
-        while (index < length && " \n".indexOf(jsonString[index]) !== -1) {
+        while (index < length && " \n\r\t".includes(jsonString[index])) {
             index++;
         }
     };
