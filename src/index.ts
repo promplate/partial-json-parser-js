@@ -7,7 +7,8 @@ class MalformedJSON extends Error { }
 
 /** Partial JSON parser
  * @param {string} jsonString Partial JSON to be parsed
- * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
+ * @param {string} jsonString JSON to be parsed
+@param {number} allow Specify what kind of partialness is allowed during JSON parsing
  * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
  */
 const parseJSON = (jsonString: string, allowPartial: number = Allow.ALL) => {
@@ -24,13 +25,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
     const length = jsonString.length;
     let index = 0;
 
-    const markPartialJSON = (msg: string) => {
-        throw new PartialJSON(`${msg} at position ${index}`);
-    };
-
-    const throwMalformedError = (msg: string) => {
-        throw new MalformedJSON(`${msg} at position ${index}`);
-    };
+    
 
     const parseAny: () => any = () => {
         skipBlank();
@@ -46,7 +41,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
             index += 4;
             return true;
         }
-        if (jsonString.substring(index, index + 5) === "false" || (Allow.BOOL & allow && length - index < 5 && "false".startsWith(jsonString.substring(index)))) {
+        if (jsonString.substring(index, index + 5) === "false" || (Allow.BOOL & allow && (length - index < 5 && "false".startsWith(jsonString.substring(index))))) {
             index += 5;
             return false;
         }
