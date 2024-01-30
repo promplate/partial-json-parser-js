@@ -25,7 +25,10 @@ jobs:
       - name: Run vitest
         run: bun run coverage
       - uses: actions/configure-pages@v4
-      - uses: actions/upload-pages-artifact@v3
+            - uses: actions/upload-artifact@v2
+        with:
+          path: coverage
+          name: github-pages
         with:
           path: coverage
           name: "."
