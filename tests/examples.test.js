@@ -55,3 +55,7 @@ test("num", () => {
     expect(parse("-1.25e+", NUM)).toBe(-1.25);
     expect(parse("-1.25e", NUM)).toBe(-1.25);
 });
+
+test("require", () => {
+    expect(require("partial-json").STR).toBe(STR);
+});
