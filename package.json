@@ -14,12 +14,12 @@
   "author": "Muspi Merol <me@promplate.dev>",
   "exports": {
     ".": {
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./options": {
-      "default": "./dist/options.js",
-      "types": "./dist/options.d.ts"
+      "types": "./dist/options.d.ts",
+      "default": "./dist/options.js"
     }
   },
   "main": "dist/index.js",
