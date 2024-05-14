@@ -1,0 +1,48 @@
+name: publish
+
+on: [push, workflow_dispatch]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  jsr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish package
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            npx jsr publish --allow-slow-types
+          else
+            npx jsr publish --allow-slow-types --dry-run 
+          fi
+
+  npm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
+
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            npm publish --provenance --access public
+          else
+            npm publish --provenance --access public --dry-run
+          fi

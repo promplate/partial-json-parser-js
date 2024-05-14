@@ -5,11 +5,15 @@ class PartialJSON extends Error { }
 
 class MalformedJSON extends Error { }
 
-/** Partial JSON parser
+/**
+ * Parse incomplete JSON
  * @param {string} jsonString Partial JSON to be parsed
- * @param {number} allowPartial Specify what kind of partialness is allowed during JSON parsing
+ * @param {number} allowPartial Specify what types are allowed to be partial, see {@link Allow} for details
+ * @returns The parsed JSON
+ * @throws {PartialJSON} If the JSON is incomplete (related to the `allow` parameter)
+ * @throws {MalformedJSON} If the JSON is malformed
  */
-const parseJSON = (jsonString: string, allowPartial: number = Allow.ALL) => {
+function parseJSON(jsonString: string, allowPartial: number = Allow.ALL): any {
     if (typeof jsonString !== "string") {
         throw new TypeError(`expecting str, got ${typeof jsonString}`);
     }
@@ -83,7 +87,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
                 return JSON.parse(jsonString.substring(start, index - Number(escape)) + '"');
             } catch (e) {
                 // SyntaxError: Invalid escape sequence
-                return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("\\", Math.max(0, index - 5))) + '"');
+                return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("\\")) + '"');
             }
         }
         markPartialJSON("Unterminated string literal");

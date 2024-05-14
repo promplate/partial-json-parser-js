@@ -4,6 +4,7 @@ import { test, expect } from "vitest";
 
 test("str", () => {
     expect(parse('"', STR)).toBe("");
+    expect(parse('" \\x12', STR)).toBe(" ");
     expect(() => parse('"', ~STR)).toThrow(PartialJSON);
 });
 
