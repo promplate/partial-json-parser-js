@@ -107,6 +107,23 @@ An object that specifies what kind of partialness is allowed during JSON parsing
 - `ATOM`: Allow all atomic values.
 - `COLLECTION`: Allow all collection values.
 - `ALL`: Allow all values.
+- `OUTERMOST_OBJ`: Allow partial parsing of the outermost object.
+- `OUTERMOST_ARR`: Allow partial parsing of the outermost array.
+
+#### OUTERMOST_OBJ and OUTERMOST_ARR
+
+These new allowances provide more granular control over parsing partial JSON:
+
+- `OUTERMOST_OBJ`: Allows partial parsing of the outermost object in the JSON hierarchy, even if `OBJ` is not allowed.
+- `OUTERMOST_ARR`: Allows partial parsing of the outermost array in the JSON hierarchy, even if `ARR` is not allowed.
+
+The "outermost" object or array doesn't necessarily mean the root of the JSON. It refers to the highest-level object or array in the current parsing context, which doesn't have another object or array above it in the JSON hierarchy.
+
+These allowances are particularly useful when you want to parse partial data at the highest level of your JSON structure while maintaining stricter parsing for nested objects or arrays.
+
+For examples of how to use these allowances, please refer to the test cases in the project repository.
+
+These new allowances provide more fine-grained control over partial JSON parsing, especially useful in scenarios where you want to be more permissive with top-level structures while maintaining stricter parsing for nested elements.
 
 ## Testing
 
