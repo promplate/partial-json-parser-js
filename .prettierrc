@@ -1,0 +1,12 @@
+{
+  "printWidth": 320,
+  "tabWidth": 2,
+  "overrides": [
+    {
+      "files": ["src/**/*.ts", "tests/**/*.js"],
+      "options": {
+        "tabWidth": 4
+      }
+    }
+  ]
+}

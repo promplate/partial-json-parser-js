@@ -56,7 +56,7 @@ export const ATOM = STR | NUM | SPECIAL;
 export const COLLECTION = ARR | OBJ;
 export const ALL = ATOM | COLLECTION;
 
-/** 
+/**
  * Control what types you allow to be partially parsed.
  * The default is to allow all types to be partially parsed, which in most casees is the best option.
  * @example

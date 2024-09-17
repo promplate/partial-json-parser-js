@@ -1,9 +1,9 @@
 import { Allow } from "./options";
 export * from "./options";
 
-class PartialJSON extends Error { }
+class PartialJSON extends Error {}
 
-class MalformedJSON extends Error { }
+class MalformedJSON extends Error {}
 
 /**
  * Parse incomplete JSON
@@ -21,7 +21,7 @@ function parseJSON(jsonString: string, allowPartial: number = Allow.ALL): any {
         throw new Error(`${jsonString} is empty`);
     }
     return _parseJSON(jsonString.trim(), allowPartial);
-};
+}
 
 const _parseJSON = (jsonString: string, allow: number) => {
     const length = jsonString.length;
@@ -152,7 +152,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
                 if (Allow.NUM & allow)
                     try {
                         return JSON.parse(jsonString.substring(0, jsonString.lastIndexOf("e")));
-                    } catch (e) { }
+                    } catch (e) {}
                 throwMalformedError(String(e));
             }
         }

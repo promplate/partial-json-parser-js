@@ -31,12 +31,14 @@
   "scripts": {
     "build": "tsc",
     "coverage": "vitest run --coverage",
+    "format": "prettier --write .",
     "test": "vitest",
     "test:ui": "vitest --ui"
   },
   "devDependencies": {
     "@vitest/coverage-istanbul": "^1.2.2",
     "@vitest/ui": "^1.2.2",
+    "prettier": "^3.3.3",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
   }
