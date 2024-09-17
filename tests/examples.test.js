@@ -117,7 +117,6 @@ test("outermost_arr_with_complete_nested_array", () => {
 test("interleaved_partial_objects_and_arrays", () => {
   const obj =
     '[1,{"outer1": "yes"}, {"outer2":"yes", "inner2":{"included": "no"';
-  console.log("obj: ", parse(obj, OUTERMOST_OBJ | OUTERMOST_ARR));
   expect(parse(obj, OUTERMOST_OBJ | OUTERMOST_ARR)).toEqual([
     1,
     { outer1: "yes" },
