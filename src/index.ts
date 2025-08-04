@@ -65,7 +65,13 @@ const _parseJSON = (jsonString: string, allow: number) => {
             index += 3;
             return NaN;
         }
-        return parseNum();
+        // Check if we have a valid number character before calling parseNum
+        const char = jsonString[index];
+        if (char === "-" || (char >= "0" && char <= "9")) {
+            return parseNum();
+        }
+        // If we get here, it's an invalid token
+        throwMalformedError(`Unexpected token '${char}'`);
     };
 
     const parseStr: () => string = () => {
@@ -108,6 +114,10 @@ const _parseJSON = (jsonString: string, allow: number) => {
                     const value = parseAny();
                     obj[key] = value;
                 } catch (e) {
+                    // If it's a malformed JSON error, let it bubble up
+                    if (e instanceof MalformedJSON) {
+                        throw e;
+                    }
                     if (Allow.OBJ & allow) return obj;
                     else throw e;
                 }
@@ -115,6 +125,10 @@ const _parseJSON = (jsonString: string, allow: number) => {
                 if (jsonString[index] === ",") index++; // skip comma
             }
         } catch (e) {
+            // If it's a malformed JSON error, let it bubble up
+            if (e instanceof MalformedJSON) {
+                throw e;
+            }
             if (Allow.OBJ & allow) return obj;
             else markPartialJSON("Expected '}' at end of object");
         }
@@ -124,6 +138,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
 
     const parseArr = () => {
         index++; // skip initial bracket
+        skipBlank(); // skip whitespace at start of array
         const arr = [];
         try {
             while (jsonString[index] !== "]") {
@@ -131,9 +146,14 @@ const _parseJSON = (jsonString: string, allow: number) => {
                 skipBlank();
                 if (jsonString[index] === ",") {
                     index++; // skip comma
+                    skipBlank(); // skip whitespace after comma
                 }
             }
         } catch (e) {
+            // If it's a malformed JSON error, let it bubble up
+            if (e instanceof MalformedJSON) {
+                throw e;
+            }
             if (Allow.ARR & allow) {
                 return arr;
             }
@@ -168,11 +188,19 @@ const _parseJSON = (jsonString: string, allow: number) => {
             return JSON.parse(jsonString.substring(start, index));
         } catch (e) {
             if (jsonString.substring(start, index) === "-") markPartialJSON("Not sure what '-' is");
-            try {
-                return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("e")));
-            } catch (e) {
-                throwMalformedError(String(e));
+            // If the number is partial and we allow partial numbers, try to parse up to last 'e'
+            if (Allow.NUM & allow) {
+                const numberStr = jsonString.substring(start, index);
+                const lastE = numberStr.lastIndexOf("e");
+                if (lastE > 0) {
+                    try {
+                        return JSON.parse(numberStr.substring(0, lastE));
+                    } catch (e2) {
+                        // Still invalid, fall through to error
+                    }
+                }
             }
+            throwMalformedError(String(e));
         }
     };
 
