@@ -20,7 +20,8 @@ function parseJSON(jsonString: string, allowPartial: number = Allow.ALL): any {
     if (!jsonString.trim()) {
         throw new Error(`${jsonString} is empty`);
     }
-    return _parseJSON(jsonString.trim(), allowPartial);
+    // Trailing whitespace may belong to an unfinished string value.
+    return _parseJSON(jsonString.trimStart(), allowPartial);
 }
 
 const _parseJSON = (jsonString: string, allow: number) => {
@@ -34,6 +35,8 @@ const _parseJSON = (jsonString: string, allow: number) => {
     const throwMalformedError = (msg: string) => {
         throw new MalformedJSON(`${msg} at position ${index}`);
     };
+
+    const isPartialJSON = (e: unknown) => e instanceof PartialJSON;
 
     const parseAny: () => any = () => {
         skipBlank();
@@ -100,23 +103,32 @@ const _parseJSON = (jsonString: string, allow: number) => {
         try {
             while (jsonString[index] !== "}") {
                 skipBlank();
-                if (index >= length && Allow.OBJ & allow) return obj;
+                if (index >= length) markPartialJSON("Expected an object key");
+                if (jsonString[index] !== '"') throwMalformedError("Expected a quoted object key");
                 const key = parseStr();
                 skipBlank();
+                if (index >= length) markPartialJSON("Expected ':' after object key");
+                if (jsonString[index] !== ":") throwMalformedError("Expected ':' after object key");
                 index++; // skip colon
                 try {
                     const value = parseAny();
                     obj[key] = value;
                 } catch (e) {
-                    if (Allow.OBJ & allow) return obj;
-                    else throw e;
+                    if (Allow.OBJ & allow && isPartialJSON(e)) return obj;
+                    throw e;
                 }
                 skipBlank();
-                if (jsonString[index] === ",") index++; // skip comma
+                if (jsonString[index] === ",") {
+                    index++; // skip comma
+                    skipBlank();
+                } else if (index < length && jsonString[index] !== "}") {
+                    throwMalformedError("Expected ',' or '}' after object value");
+                }
             }
         } catch (e) {
+            if (!isPartialJSON(e)) throw e;
             if (Allow.OBJ & allow) return obj;
-            else markPartialJSON("Expected '}' at end of object");
+            markPartialJSON("Expected '}' at end of object");
         }
         index++; // skip final brace
         return obj;
@@ -124,6 +136,7 @@ const _parseJSON = (jsonString: string, allow: number) => {
 
     const parseArr = () => {
         index++; // skip initial bracket
+        skipBlank();
         const arr = [];
         try {
             while (jsonString[index] !== "]") {
@@ -131,9 +144,13 @@ const _parseJSON = (jsonString: string, allow: number) => {
                 skipBlank();
                 if (jsonString[index] === ",") {
                     index++; // skip comma
+                    skipBlank();
+                } else if (index < length && jsonString[index] !== "]") {
+                    throwMalformedError("Expected ',' or ']' after array value");
                 }
             }
         } catch (e) {
+            if (!isPartialJSON(e)) throw e;
             if (Allow.ARR & allow) {
                 return arr;
             }
@@ -144,36 +161,29 @@ const _parseJSON = (jsonString: string, allow: number) => {
     };
 
     const parseNum = () => {
-        if (index === 0) {
-            if (jsonString === "-") throwMalformedError("Not sure what '-' is");
-            try {
-                return JSON.parse(jsonString);
-            } catch (e) {
-                if (Allow.NUM & allow)
-                    try {
-                        return JSON.parse(jsonString.substring(0, jsonString.lastIndexOf("e")));
-                    } catch (e) {}
-                throwMalformedError(String(e));
-            }
-        }
-
         const start = index;
+        while (index < length && !",]} \n\r\t".includes(jsonString[index])) index++;
+        const token = jsonString.substring(start, index);
+        const atEnd = index === length;
 
-        if (jsonString[index] === "-") index++;
-        while (jsonString[index] && ",]}".indexOf(jsonString[index]) === -1) index++;
-
-        if (index == length && !(Allow.NUM & allow)) markPartialJSON("Unterminated number literal");
-
+        let value;
         try {
-            return JSON.parse(jsonString.substring(start, index));
+            value = JSON.parse(token);
         } catch (e) {
-            if (jsonString.substring(start, index) === "-") markPartialJSON("Not sure what '-' is");
-            try {
-                return JSON.parse(jsonString.substring(start, jsonString.lastIndexOf("e")));
-            } catch (e) {
-                throwMalformedError(String(e));
+            if (token === "-" && atEnd && start > 0) markPartialJSON("Not sure what '-' is");
+            if (atEnd) {
+                const partial = token.match(/^(-?(?:0|[1-9]\d*)(?:\.\d+)?)[eE][+-]?$/)
+                    ?? token.match(/^(-?(?:0|[1-9]\d*))\.$/);
+                if (partial) {
+                    if (Allow.NUM & allow) return JSON.parse(partial[1]);
+                    if (start > 0) markPartialJSON("Unterminated number literal");
+                }
             }
+            throwMalformedError(String(e));
         }
+        // Only valid numeric tokens can be incomplete streaming numbers.
+        if (start > 0 && atEnd && !(Allow.NUM & allow)) markPartialJSON("Unterminated number literal");
+        return value;
     };
 
     const skipBlank = () => {
@@ -181,7 +191,10 @@ const _parseJSON = (jsonString: string, allow: number) => {
             index++;
         }
     };
-    return parseAny();
+    const value = parseAny();
+    skipBlank();
+    if (index < length) throwMalformedError("Unexpected content after JSON value");
+    return value;
 };
 
 const parse = parseJSON;
