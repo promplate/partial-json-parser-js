@@ -20,7 +20,8 @@ function parseJSON(jsonString: string, allowPartial: number = Allow.ALL): any {
     if (!jsonString.trim()) {
         throw new Error(`${jsonString} is empty`);
     }
-    return _parseJSON(jsonString.trim(), allowPartial);
+    // Trailing whitespace may belong to an unfinished string value.
+    return _parseJSON(jsonString.trimStart(), allowPartial);
 }
 
 const _parseJSON = (jsonString: string, allow: number) => {
